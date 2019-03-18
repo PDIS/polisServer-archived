@@ -2,7 +2,7 @@
 
 "use strict";
 
-const config = require('./accessConfig');
+const config = require('./accessConfig.js');
 const akismetLib = require('akismet');
 const AWS = require('aws-sdk');
 AWS.config.set('region', 'us-east-1');
