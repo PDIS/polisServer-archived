@@ -5,7 +5,7 @@ const Promise = require('bluebird');
 const express = require('express');
 const optional = require("optional");
 
-const server = require('./server');
+const server = require('./src/server.js');
 
 const polisServerBrand = optional('polisServerBrand');
 
@@ -231,9 +231,9 @@ helpersInitialized.then(function(o) {
   ////////////////////////////////////////////
 
   app.use(function(req, res, next) {
-    console.log("before");
-    console.log(req.body);
-    console.log(req.headers);
+    // console.log("before");
+    // console.log(req.body);
+    // console.log(req.headers);
     next();
   });
 
@@ -256,9 +256,9 @@ helpersInitialized.then(function(o) {
   app.use(middleware_log_middleware_errors);
 
   app.use(function(req, res, next) {
-    console.log("part2");
-    console.log(req.body);
-    console.log(req.headers);
+    // console.log("part2");
+    // console.log(req.body);
+    // console.log(req.headers);
     next();
   });
 

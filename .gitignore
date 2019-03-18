@@ -3,6 +3,7 @@
 .google_creds_temp
 npm-debug.log
 node_modules
+.idea
 log
 /.idea
 HIDDEN_ENV_EXPORT
