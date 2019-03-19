@@ -1,5 +1,5 @@
 const request = require('request');
-const config = require('../config');
+const config = require('../polis-config');
 
 function signIn(req, res) {
   let url = config.get('JOIN_SERVER');
