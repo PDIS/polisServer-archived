@@ -1,5 +1,5 @@
 const request = require('request');
-const config = require('../accessConfig');
+const config = require('../config');
 
 function signIn(req, res) {
   let url = config.get('JOIN_SERVER');
