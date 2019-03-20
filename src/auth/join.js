@@ -13,7 +13,14 @@ function signIn(req, res) {
       return getUserInfo(req, res, url, apiKey, token)
     })
     .then(user => {
-      return createJoinUser(req, res, user);
+      return isUserExist(user);
+    })
+    .then((existed, user) => {
+      if (existed) {
+        return login(req, res, user);
+      } else {
+        return create(req, res, user);
+      }
     })
     .catch(error => res.send(error));
 }
@@ -89,7 +96,18 @@ function getUserInfo(req, res, url, apiKey, token) {
   });
 }
 
-function createJoinUser(req, res, user) {
+function isUserExist(user) {
+  return pg.queryP('SELECT uid FROM join_users WHERE join_user_id=$1', [user.uid])
+    .then(rows => {
+      resolve(rows.length > 0, user);
+    });
+}
+
+function login(req, res, user) {
+  res.send(`Logging ${user.nickname} in.`)
+}
+
+function create(req, res, user) {
   pg.queryP("INSERT INTO users " +
     "(hname, site_id, is_owner) VALUES ($1, $2, $3)" +
     "returning uid;",
