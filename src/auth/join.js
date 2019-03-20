@@ -17,12 +17,15 @@ function signIn(req, res) {
     })
     .then((existed, user) => {
       if (existed) {
-        return login(req, res, user);
+        login(req, res, user);
       } else {
-        return create(req, res, user);
+        create(req, res, user);
       }
     })
-    .catch(error => res.send(error));
+    .catch(error => {
+      res.send(`Error when signing in with Join: ${error}`);
+      console.log(`Error when signing in with Join: ${error}`);
+    });
 }
 
 function requireToken(req, res, url, apiKey) {
@@ -100,9 +103,12 @@ function isUserExist(user) {
   return new Promise((resolve, reject) => {
     pg.queryP('SELECT uid FROM join_users WHERE join_user_id=$1', [user.uid])
       .then(rows => {
-        resolve(rows.length > 0, user);
+        resolve({
+          existed: rows.length > 0,
+          user: user
+        });
       })
-      .catch(err => reject(err));
+      .catch(err => reject(`Error when checking existence: ${err}`));
   });
 }
 
