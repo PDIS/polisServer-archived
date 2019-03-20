@@ -15,11 +15,11 @@ function signIn(req, res) {
     .then(user => {
       return isUserExist(user);
     })
-    .then((existed, user) => {
-      if (existed) {
-        login(req, res, user);
+    .then(result => {
+      if (result.existed) {
+        login(req, res, result.user);
       } else {
-        create(req, res, user);
+        create(req, res, result.user);
       }
     })
     .catch(error => {
