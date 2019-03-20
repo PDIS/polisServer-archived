@@ -97,7 +97,8 @@ function createJoinUser(req, res, user) {
     .then(rows => {
       let uid = rows[0].uid;
       return pg.queryP("INSERT INTO join_users" +
-        "(uid, join_user_id, nickname, picture, valid) VALUES ($1, $2, $3, $4, $5);",
+        "(uid, join_user_id, nickname, picture, valid) VALUES ($1, $2, $3, $4, $5)" +
+        "RETURNING uid;",
         [uid, user.uid, user.nickname, user.picture, user.isValid])
     })
     .then(rows => {
