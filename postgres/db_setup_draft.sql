@@ -1114,6 +1114,7 @@ CREATE TABLE demographic_data (
 CREATE TABLE join_users (
     uid INTEGER NOT NULL REFERENCES users(uid),
     join_user_id TEXT,
+    nickname TEXT,
     picture TEXT,
     valid BOOLEAN,
     created BIGINT DEFAULT now_as_millis(),
