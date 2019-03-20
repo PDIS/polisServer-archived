@@ -13,7 +13,8 @@ i18n.configure({
   directory: __dirname + '/locales'
 });
 
-function createUser(req, res, COOKIES) {
+function createUser(req, res) {
+  const COOKIES = require('../utils/cookies').COOKIES;
   let hname = req.p.hname;
   let password = req.p.password;
   let password2 = req.p.password2; // for verification
@@ -74,7 +75,7 @@ function createUser(req, res, COOKIES) {
     return;
   }
 
-  pg.queryP("SELECT * FROM users WHERE email = ($1)", [email]).then(function (rows) {
+  pg.query("SELECT * FROM users WHERE email = ($1)", [email]).then(function (rows) {
 
     if (rows.length > 0) {
       fail(res, 403, "polis_err_reg_user_with_that_email_exists");
