@@ -97,10 +97,13 @@ function getUserInfo(req, res, url, apiKey, token) {
 }
 
 function isUserExist(user) {
-  return pg.queryP('SELECT uid FROM join_users WHERE join_user_id=$1', [user.uid])
-    .then(rows => {
-      resolve(rows.length > 0, user);
-    });
+  return new Promise((resolve, reject) => {
+    pg.queryP('SELECT uid FROM join_users WHERE join_user_id=$1', [user.uid])
+      .then(rows => {
+        resolve(rows.length > 0, user);
+      })
+      .catch(err => reject(err));
+  });
 }
 
 function login(req, res, user) {
@@ -126,7 +129,7 @@ function create(req, res, user) {
     .catch(err => {
       console.log('Error when creating join user');
       console.log(err);
-      res.send(err);
+      res.send(`Error: ${err}`);
     });
 }
 
