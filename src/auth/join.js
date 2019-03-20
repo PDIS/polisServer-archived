@@ -1,17 +1,19 @@
 const request = require('request');
-const config = require('../polis-config');
+const Config = require('../polis-config');
+const pg = require('../db/pg-query');
+const Log = require('../log');
+const Session = require('../session');
+const Cookies = require('../utils/cookies');
 
 function signIn(req, res) {
-  let url = config.get('JOIN_SERVER');
-  let apiKey = config.get('JOIN_API_KEY');
+  let url = Config.get('JOIN_SERVER');
+  let apiKey = Config.get('JOIN_API_KEY');
   requireToken(req, res, url, apiKey)
     .then(token => {
       return getUserInfo(req, res, url, apiKey, token)
     })
     .then(user => {
-      // TODO: Extract signin or create user from from server.js and call them
-      res.send(user);
-      // createJoinUser(req, res, user);
+      return createJoinUser(req, res, user);
     })
     .catch(error => res.send(error));
 }
@@ -68,10 +70,15 @@ function getUserInfo(req, res, url, apiKey, token) {
             uid: data.result.userUid,
             nickname: data.result.name,
             isValid: data.result.isValid,
-            picture: data.result.picture,
-            email: data.result.email
+            picture: data.result.picture
           };
-          resolve(user);
+          if (!user.uid) {
+            reject('Lacking uid');
+          } else if (!user.nickname) {
+            reject('Lacking nickname');
+          } else {
+            resolve(user);
+          }
         } else {
           console.log('Get user info error: ' + response.statusCode);
           console.log(error);
@@ -79,6 +86,40 @@ function getUserInfo(req, res, url, apiKey, token) {
         }
       }
     );
+  });
+}
+
+function createJoinUser(req, res, user) {
+  pg.queryP("INSERT INTO users " +
+    "(hname, site_id, is_owner) VALUES ($1, $2, $3)" +
+    "returning uid;",
+    [user.nickname, `JOIN_${user.uid}`, true])
+    .then(rows => {
+      let uid = rows[0].uid;
+      return pg.queryP("INSERT INTO join_users" +
+        "(uid, join_user_id, picture, valid) VALUES ($1, $2, $3, $4);",
+        [uid, user.uid, user.nickname, user.picture, user.isValid])
+    })
+    .then(rows => {
+      let uid = rows[0].uid;
+      startSession(req, res, uid);
+    })
+    .catch(err => {
+      console.log('Error when creating join user');
+      console.log(err);
+      res.send(err);
+    });
+}
+
+function startSession(req, res, uid) {
+  Session.startSession(uid, function (err, token) {
+    if (err) {
+      Log.fail(res, 500, "polis_err_reg_failed_to_start_session", err);
+      return;
+    }
+    Cookies.addCookies(req, res, token, uid).then(() => {
+      res.send(`UID ${uid} logged in.`);
+    });
   });
 }
 
