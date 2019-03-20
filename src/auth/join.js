@@ -1,19 +1,31 @@
 const request = require('request');
-const config = require('../polis-config');
+const Config = require('../polis-config');
+const pg = require('../db/pg-query');
+const Log = require('../log');
+const Session = require('../session');
+const Cookies = require('../utils/cookies');
 
 function signIn(req, res) {
-  let url = config.get('JOIN_SERVER');
-  let apiKey = config.get('JOIN_API_KEY');
+  let url = Config.get('JOIN_SERVER');
+  let apiKey = Config.get('JOIN_API_KEY');
   requireToken(req, res, url, apiKey)
     .then(token => {
       return getUserInfo(req, res, url, apiKey, token)
     })
     .then(user => {
-      // TODO: Extract signin or create user from from server.js and call them
-      res.send(user);
-      // createJoinUser(req, res, user);
+      return isUserExist(user);
     })
-    .catch(error => res.send(error));
+    .then(result => {
+      if (result.existed) {
+        login(req, res, result.user);
+      } else {
+        create(req, res, result.user);
+      }
+    })
+    .catch(error => {
+      res.send(`Error when signing in with Join: ${error}`);
+      console.log(`Error when signing in with Join: ${error}`);
+    });
 }
 
 function requireToken(req, res, url, apiKey) {
@@ -68,10 +80,15 @@ function getUserInfo(req, res, url, apiKey, token) {
             uid: data.result.userUid,
             nickname: data.result.name,
             isValid: data.result.isValid,
-            picture: data.result.picture,
-            email: data.result.email
+            picture: data.result.picture
           };
-          resolve(user);
+          if (!user.uid) {
+            reject('Lacking uid');
+          } else if (!user.nickname) {
+            reject('Lacking nickname');
+          } else {
+            resolve(user);
+          }
         } else {
           console.log('Get user info error: ' + response.statusCode);
           console.log(error);
@@ -79,6 +96,58 @@ function getUserInfo(req, res, url, apiKey, token) {
         }
       }
     );
+  });
+}
+
+function isUserExist(user) {
+  return new Promise((resolve, reject) => {
+    pg.queryP('SELECT uid FROM join_users WHERE join_user_id=$1', [user.uid])
+      .then(rows => {
+        resolve({
+          existed: rows.length > 0,
+          user: user
+        });
+      })
+      .catch(err => reject(`Error when checking existence: ${err}`));
+  });
+}
+
+function login(req, res, user) {
+  res.send(`Logging ${user.nickname} in.`)
+}
+
+function create(req, res, user) {
+  pg.queryP("INSERT INTO users " +
+    "(hname, site_id, is_owner) VALUES ($1, $2, $3)" +
+    "returning uid;",
+    [user.nickname, `JOIN_${user.uid}`, true])
+    .then(rows => {
+      let uid = rows[0].uid;
+      return pg.queryP("INSERT INTO join_users" +
+        "(uid, join_user_id, nickname, picture, valid) VALUES ($1, $2, $3, $4, $5)" +
+        "RETURNING uid;",
+        [uid, user.uid, user.nickname, user.picture, user.isValid])
+    })
+    .then(rows => {
+      let uid = rows[0].uid;
+      startSession(req, res, uid);
+    })
+    .catch(err => {
+      console.log('Error when creating join user');
+      console.log(err);
+      res.send(`Error: ${err}`);
+    });
+}
+
+function startSession(req, res, uid) {
+  Session.startSession(uid, function (err, token) {
+    if (err) {
+      Log.fail(res, 500, "polis_err_reg_failed_to_start_session", err);
+      return;
+    }
+    Cookies.addCookies(req, res, token, uid).then(() => {
+      res.send(`UID ${uid} logged in.`);
+    });
   });
 }
 
