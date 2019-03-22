@@ -17,7 +17,7 @@ function signIn(req, res) {
     })
     .then(result => {
       if (result.existed) {
-        login(req, res, result.user);
+        login(req, res, result.user, result.uid);
       } else {
         create(req, res, result.user);
       }
@@ -105,6 +105,7 @@ function isUserExist(user) {
       .then(rows => {
         resolve({
           existed: rows.length > 0,
+          uid: rows[0].uid,
           user: user
         });
       })
@@ -112,8 +113,16 @@ function isUserExist(user) {
   });
 }
 
-function login(req, res, user) {
-  res.send(`Logging ${user.nickname} in.`)
+function login(req, res, user, uid) {
+  Session.startSession(uid, (err, token) => {
+    if (err) {
+      Log.fail(res, 500, "polis_err_reg_failed_to_start_session", err);
+      return;
+    }
+    Cookies.addCookies(req, res, token, uid).then(() => {
+      res.redirect('/');
+    });
+  });
 }
 
 function create(req, res, user) {
@@ -130,25 +139,13 @@ function create(req, res, user) {
     })
     .then(rows => {
       let uid = rows[0].uid;
-      startSession(req, res, uid);
+      login(req, res, user, uid);
     })
     .catch(err => {
       console.log('Error when creating join user');
       console.log(err);
       res.send(`Error: ${err}`);
     });
-}
-
-function startSession(req, res, uid) {
-  Session.startSession(uid, function (err, token) {
-    if (err) {
-      Log.fail(res, 500, "polis_err_reg_failed_to_start_session", err);
-      return;
-    }
-    Cookies.addCookies(req, res, token, uid).then(() => {
-      res.send(`UID ${uid} logged in.`);
-    });
-  });
 }
 
 module.exports = {
