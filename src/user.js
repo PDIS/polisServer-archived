@@ -99,17 +99,20 @@ function getUser(uid, zid_optional, xid_optional, owner_uid_optional) {
     getFacebookInfo([uid]),
     getTwitterInfo([uid]),
     xidInfoPromise,
-    getEmailVerifiedInfo([uid])
+    getEmailVerifiedInfo([uid]),
+    getJoinInfo([uid])
   ]).then(function(o) {
     let info = o[0];
     let fbInfo = o[1];
     let twInfo = o[2];
     let xInfo = o[3];
     let mvInfo = o[4];
+    let joinInfo = o[5];
 
     let hasFacebook = fbInfo && fbInfo.length && fbInfo[0];
     let hasTwitter = twInfo && twInfo.length && twInfo[0];
     let hasXid = xInfo && xInfo.length && xInfo[0];
+    let hasJoin = joinInfo && joinInfo.length && joinInfo[0];
     if (hasFacebook) {
       let width = 40;
       let height = 40;
@@ -124,6 +127,9 @@ function getUser(uid, zid_optional, xid_optional, owner_uid_optional) {
       delete xInfo[0].created;
       delete xInfo[0].uid;
     }
+    if (hasJoin) {
+      delete joinInfo[0].uid;
+    }
     return {
       uid: uid,
       email: info.email,
@@ -132,8 +138,10 @@ function getUser(uid, zid_optional, xid_optional, owner_uid_optional) {
       hasFacebook: !!hasFacebook,
       facebook: fbInfo && fbInfo[0],
       twitter: twInfo && twInfo[0],
+      join: joinInfo && joinInfo[0],
       hasTwitter: !!hasTwitter,
       hasXid: !!hasXid,
+      hasJoin: !!hasJoin,
       xInfo: xInfo && xInfo[0],
       finishedTutorial: !!info.tut,
       site_ids: [info.site_id],
@@ -156,6 +164,10 @@ function getFacebookInfo(uids) {
 function getEmailVerifiedInfo(uids) {
   return pg.queryP_readOnly("SELECT * FROM email_validations WHERE email=" +
     "(SELECT email FROM users WHERE uid in ($1));", uids);
+}
+
+function getJoinInfo(uids) {
+  return pg.queryP_readOnly("select * from join_users where uid in ($1);", uids);
 }
 
 // so we can grant extra days to users
@@ -298,6 +310,7 @@ function getPidForParticipant(assigner, cache) {
 }
 
 module.exports = {
+  pidCache,
   getUserInfoForUid,
   getUserInfoForUid2,
   addLtiUserIfNeeded,
