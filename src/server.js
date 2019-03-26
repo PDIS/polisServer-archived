@@ -3116,7 +3116,9 @@ Feel free to reply to this email if you need help.`;
         }
         return;
       }
-      if (req.body.uid && req.body.uid !== uid) {
+
+      let uidInRequest = req.body.uid || req.cookies[COOKIES.UID];
+      if (uidInRequest && uidInRequest != uid) {
         res.status(401);
         next("polis_err_auth_mismatch_uid");
         return;
