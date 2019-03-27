@@ -83,9 +83,9 @@ function getUserInfo(req, res, url, apiKey, token) {
             picture: data.result.picture
           };
           if (!user.uid) {
-            reject('Lacking uid');
+            reject(`Lacking uid: ${body}`);
           } else if (!user.nickname) {
-            reject('Lacking nickname');
+            reject(`Lacking nickname: ${body}`);
           } else {
             resolve(user);
           }
@@ -105,7 +105,7 @@ function isUserExist(user) {
       .then(rows => {
         resolve({
           existed: rows.length > 0,
-          uid: rows[0].uid,
+          uid: rows[0] ? rows[0].uid : null,
           user: user
         });
       })
