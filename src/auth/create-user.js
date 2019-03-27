@@ -7,6 +7,7 @@ const Cookies = require('../utils/cookies');
 const User = require('../user');
 const Session = require('../session');
 const Utils = require('../utils/common');
+const Password = require('./password');
 
 i18n.configure({
   locales:['en', 'zh-TW'],
@@ -186,7 +187,7 @@ function createUser(req, res) {
 }
 
 function doSendVerification(req, email) {
-  return generateTokenP(30, false).then(function (einvite) {
+  return Password.generateTokenP(30, false).then(function (einvite) {
     return pg.queryP("insert into einvites (email, einvite) values ($1, $2);", [email, einvite]).then(function (rows) {
       return sendVerificationEmail(req, email, einvite);
     });
@@ -221,61 +222,12 @@ function decodeParams(encodedStringifiedJson) {
   return o;
 }
 
-function generateTokenP(len, pseudoRandomOk) {
-  return new Promise(function (resolve, reject) {
-    generateToken(len, pseudoRandomOk, function (err, token) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(token);
-      }
-    });
-  });
-}
-
-function generateToken(len, pseudoRandomOk, callback) {
-  // TODO store up a buffer of random bytes sampled at random times to reduce predictability. (or see if crypto module does this for us)
-  // TODO if you want more readable tokens, see ReadableIds
-  let gen;
-  if (pseudoRandomOk) {
-    gen = crypto.pseudoRandomBytes;
-  } else {
-    gen = crypto.randomBytes;
-  }
-  gen(len, function (err, buf) {
-    if (err) {
-      return callback(err);
-    }
-
-    let prettyToken = buf.toString('base64')
-      .replace(/\//g, 'A').replace(/\+/g, 'B') // replace url-unsafe tokens (ends up not being a proper encoding since it maps onto A and B. Don't want to use any punctuation.)
-      .replace(/l/g, 'C') // looks like '1'
-      .replace(/L/g, 'D') // looks like '1'
-      .replace(/o/g, 'E') // looks like 0
-      .replace(/O/g, 'F') // looks lke 0
-      .replace(/1/g, 'G') // looks like 'l'
-      .replace(/0/g, 'H') // looks like 'O'
-      .replace(/I/g, 'J') // looks like 'l'
-      .replace(/g/g, 'K') // looks like 'g'
-      .replace(/G/g, 'M') // looks like 'g'
-      .replace(/q/g, 'N') // looks like 'q'
-      .replace(/Q/g, 'R') // looks like 'q'
-    ;
-    // replace first character with a number between 2 and 9 (avoiding 0 and 1 since they look like l and O)
-    prettyToken = _.random(2, 9) + prettyToken.slice(1);
-    prettyToken = prettyToken.toLowerCase();
-    prettyToken = prettyToken.slice(0, len); // in case it's too long
-
-    callback(0, prettyToken);
-  });
-}
-
 function generateAndRegisterZinvite(zid, generateShort) {
   let len = 10;
   if (generateShort) {
     len = 6;
   }
-  return generateTokenP(len, false).then(function (zinvite) {
+  return Password.generateTokenP(len, false).then(function (zinvite) {
     return pg.queryP('INSERT INTO zinvites (zid, zinvite, created) VALUES ($1, $2, default);', [zid, zinvite]).then(function (rows) {
       return zinvite;
     });
@@ -285,7 +237,5 @@ function generateAndRegisterZinvite(zid, generateShort) {
 module.exports = {
   createUser,
   doSendVerification,
-  generateToken,
-  generateTokenP,
   generateAndRegisterZinvite
 };
