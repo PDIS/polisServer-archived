@@ -15,6 +15,10 @@ i18n.configure({
 });
 
 function createUser(req, res) {
+  if (!!Config.get('STOP_REGISTER')) {
+    res.send('New user register by e-mail is turned off.');
+    return;
+  }
   const COOKIES = require('../utils/cookies').COOKIES;
   let hname = req.p.hname;
   let password = req.p.password;
