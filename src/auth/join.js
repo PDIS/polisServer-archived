@@ -120,7 +120,13 @@ function login(req, res, user, uid) {
       return;
     }
     Cookies.addCookies(req, res, token, uid).then(() => {
-      res.redirect('/');
+      res.writeHeader(200, {"Content-Type": "text/html",});
+      res.write('<html><body><script>if (window.name === "signin") ' +
+        '{alert("已登入，請關閉此視窗並重新整理原本視窗。");window.close();} ' +
+        'else ' +
+        '{window.location.href="/";}' +
+        '</script></body></html>');
+      res.end();
     });
   });
 }
