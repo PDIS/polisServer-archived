@@ -112,7 +112,7 @@ function getUser(uid, zid_optional, xid_optional, owner_uid_optional) {
     let hasFacebook = fbInfo && fbInfo.length && fbInfo[0];
     let hasTwitter = twInfo && twInfo.length && twInfo[0];
     let hasXid = xInfo && xInfo.length && xInfo[0];
-    let hasJoin = joinInfo && joinInfo.length && joinInfo[0];
+    let hasJoin = joinInfo && joinInfo.length && joinInfo[0] && joinInfo[0].isValid;
     if (hasFacebook) {
       let width = 40;
       let height = 40;
