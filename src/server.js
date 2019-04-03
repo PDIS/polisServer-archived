@@ -4101,8 +4101,12 @@ Email verified! You can close this tab or hit the back button.
         let conv = a[1];
         let conversation_id = a[2];
 
-        let url = conv.parent_url || "https://pol.is/" + conversation_id;
-
+        let serviceUrl = Config.get('SERVICE_URL');
+        if (serviceUrl[serviceUrl.length - 1] !== '/') {
+          serviceUrl += '/';
+        }
+        let url = serviceUrl + conversation_id;
+        
         let pid_to_ptpt = {};
         candidates.forEach((c) => {
           pid_to_ptpt[c.pid] = c;
