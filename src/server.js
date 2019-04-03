@@ -4238,7 +4238,7 @@ Email verified! You can close this tab or hit the back button.
     body += "If for some reason the above link does not work, please reply directly to this email with the message 'Unsubscribe' and we will remove you within 24 hours.";
     body += "\n";
     body += "Thanks for your participation";
-    return sendEmailByUid(uid, subject, body);
+    return sendEmailByUid(uid, subject, body, email);
   }
 
   let shouldSendNotifications = !devMode;
