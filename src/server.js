@@ -3826,11 +3826,14 @@ Email verified! You can close this tab or hit the back button.
     });
   }
 
-  function sendEmailByUid(uid, subject, body) {
+  function sendEmailByUid(uid, subject, body, email) {
     return getUserInfoForUid2(uid).then(function(userInfo) {
+      if (!email) {
+        email = userInfo.email;
+      }
       return sendTextEmail(
         POLIS_FROM_ADDRESS,
-        userInfo.hname ? (`${userInfo.hname} <${userInfo.email}>`) : userInfo.email,
+        userInfo.hname ? (`${userInfo.hname} <${email}>`) : email,
         subject,
         body);
     });
@@ -4214,7 +4217,18 @@ Email verified! You can close this tab or hit the back button.
 
   function sendNotificationEmail(uid, url, conversation_id, email, remaining) {
     let subject = "New statements to vote on (conversation " + conversation_id + ")"; // Not sure if putting the conversation_id is ideal, but we need some way to ensure that the notifications for each conversation appear in separte threads.
-    let body = "There are new statements available for you to vote on here:\n";
+    let body = "";
+    body += "您關注的此對話有新的意見：\n";
+    body += "\n";
+    body += url + "\n";
+    body += "\n";
+    body += "您收到這封信是因為您已訂閱 Polis 對話的更新通知。您可用下列連結取消訂閱：\n";
+    body += createNotificationsUnsubscribeUrl(conversation_id, email) + "\n";
+    body += "\n";
+    body += "感謝您的參與。";
+    body += "\n";
+    body += "\n";
+    body += "There are new statements available for you to vote on here:\n";
     body += "\n";
     body += url + "\n";
     body += "\n";
@@ -4240,10 +4254,7 @@ Email verified! You can close this tab or hit the back button.
     let path = "api/v3/notifications/unsubscribe";
     params[HMAC_SIGNATURE_PARAM_NAME] = createHmacForQueryParams(path, params);
 
-    let server = "http://localhost:5000";
-    if (!devMode) {
-      server = "https://" + process.env.PRIMARY_POLIS_URL;
-    }
+    let server = Config.get('SERVICE_URL');
     return server + "/" + path + "?" + paramsToStringSortedByName(params);
   }
 
