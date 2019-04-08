@@ -7027,6 +7027,9 @@ Email verified! You can close this tab or hit the back button.
             let detection = Array.isArray(detections) ? detections[0] : detections;
             let lang = detection.language;
             let lang_confidence = detection.confidence;
+            if (lang == null) {
+              lang = 'en';
+            }
 
             return pgQueryP(
               "INSERT INTO COMMENTS " +
