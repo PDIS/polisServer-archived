@@ -6171,6 +6171,10 @@ Email verified! You can close this tab or hit the back button.
               "twitter_user_id",
               "profile_image_url_https",
               "followers_count",
+              // join
+              "join_name",
+              "join_id",
+              "join_picture",
               // xInfo
               "x_profile_image_url",
               "x_name",
