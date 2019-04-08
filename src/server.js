@@ -10462,7 +10462,7 @@ Thanks for using Polis!
       "fb as (select * from facebook_users where uid in (" + uidString + ")), "+
       "tw as (select * from twitter_users where uid in (" + uidString + ")), "+
       "jn as (select * from join_users where uid in (" + uidString + ")), "+
-      "foo as (select *, coalesce(fb.uid, tw.uid) as foouid from fb full outer join tw on tw.uid = fb.uid) "+
+      "foo as (select *, coalesce(fb.uid, tw.uid, jn.uid) as foouid from fb full outer join tw on tw.uid = fb.uid FULL OUTER JOIN jn on jn.uid = fb.uid) "+
       "select *, coalesce(foo.foouid, x.uid) as uid from foo full outer join x on x.uid = foo.foouid;", [zid]);
   }
 
