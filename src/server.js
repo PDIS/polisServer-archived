@@ -6172,9 +6172,8 @@ Email verified! You can close this tab or hit the back button.
               "profile_image_url_https",
               "followers_count",
               // join
-              "join_name",
-              "join_id",
-              "join_picture",
+              "nickname",
+              "picture",
               // xInfo
               "x_profile_image_url",
               "x_name",
@@ -10462,6 +10461,7 @@ Thanks for using Polis!
       "x as (select * from xids where uid in (" + uidString + ") and owner  in (select org_id from conversations where zid = ($1))), "+
       "fb as (select * from facebook_users where uid in (" + uidString + ")), "+
       "tw as (select * from twitter_users where uid in (" + uidString + ")), "+
+      "jn as (select * from join_users where uid in (" + uidString + ")), "+
       "foo as (select *, coalesce(fb.uid, tw.uid) as foouid from fb full outer join tw on tw.uid = fb.uid) "+
       "select *, coalesce(foo.foouid, x.uid) as uid from foo full outer join x on x.uid = foo.foouid;", [zid]);
   }
