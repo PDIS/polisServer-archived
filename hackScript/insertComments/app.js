@@ -51,7 +51,7 @@ async function insertToDB(comment) {
   let res = await client.query('INSERT INTO users (hname, is_owner) VALUES ($1, $2) RETURNING uid;', [comment.name, 'f']);
   let uid = res.rows[0].uid;
 	// Insert picture
-	await client.query("INSERT INTO twitter_users (uid, twitter_user_id, screen_name, followers_count, friends_count, verified, profile_image_url_https) VALUES ($1, $2, $3, 0, 0, 'f', $4)", [uid, uid.toString(), comment.name, comment.picture]);
+	await client.query("INSERT INTO join_users (uid, nickname, picture) VALUES ($1, $2, $3)", [uid, comment.name, comment.picture]);
 	// Get zid
 	let zinvite = process.argv[2];
 	if (zinvite.length === 0) {
@@ -63,7 +63,7 @@ async function insertToDB(comment) {
   res = await client.query("INSERT INTO participants (zid, uid, created) VALUES ($1, $2, default) RETURNING pid;", [zid, uid]);
 	let pid = res.rows[0].pid;
 	// Insert Chinese comment
-	res = await client.query("INSERT INTO comments (pid, zid, txt, velocity, active, mod, uid, tweet_id, quote_src_url, anon, is_seed, created, tid, lang, lang_confidence) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, default, null, $12, $13) ON CONFLICT DO NOTHING RETURNING tid;", [pid, zid, comment.chineseComment, 1, true, 0, uid, 0, '', false, true, 'zh-tw', 1]);
+	res = await client.query("INSERT INTO comments (pid, zid, txt, velocity, active, mod, uid, tweet_id, quote_src_url, anon, is_seed, created, tid, lang, lang_confidence) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, default, null, $12, $13) ON CONFLICT DO NOTHING RETURNING tid;", [pid, zid, comment.chineseComment, 1, true, 0, uid, 0, '', false, false, 'zh-tw', 1]);
 	if (res.rowCount === 0) {
 	  await client.end();
 		return;
