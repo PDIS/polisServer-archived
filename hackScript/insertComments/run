@@ -1,0 +1,5 @@
+export PGDATABASE=testpolis
+export PGUSER=polis
+export PGPASSWORD=polis
+
+node app.js 3wufdr3ca5
