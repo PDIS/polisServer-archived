@@ -4058,14 +4058,14 @@ Email verified! You can close this tab or hit the back button.
   function sendNotificationEmail(uid, url, conversation_id, email, remaining) {
     let subject = "New statements to vote on (conversation " + conversation_id + ")"; // Not sure if putting the conversation_id is ideal, but we need some way to ensure that the notifications for each conversation appear in separte threads.
     let body = "";
-    body += "±zÃöª`ªº¦¹¹ï¸Ü¦³·sªº·N¨£¡G\n";
+    body += "æ‚¨é—œæ³¨çš„æ­¤å°è©±æœ‰æ–°çš„æ„è¦‹ï¼š\n";
     body += "\n";
     body += url + "\n";
     body += "\n";
-    body += "±z¦¬¨ì³o«Ê«H¬O¦]¬°±z¤w­q¾\ Polis ¹ï¸Üªº§ó·s³qª¾¡C±z¥i¥Î¤U¦C³sµ²¨ú®ø­q¾\¡G\n";
+    body += "æ‚¨æ”¶åˆ°é€™å°ä¿¡æ˜¯å› ç‚ºæ‚¨å·²è¨‚é–± Polis å°è©±çš„æ›´æ–°é€šçŸ¥ã€‚æ‚¨å¯ç”¨ä¸‹åˆ—é€£çµå–æ¶ˆè¨‚é–±ï¼š\n";
     body += createNotificationsUnsubscribeUrl(conversation_id, email) + "\n";
     body += "\n";
-    body += "·PÁÂ±zªº°Ñ»P¡C";
+    body += "æ„Ÿè¬æ‚¨çš„åƒèˆ‡ã€‚";
     body += "\n";
     body += "\n";
     body += "There are new statements available for you to vote on here:\n";
