@@ -375,6 +375,7 @@ function appendTranslationToComments(comments, option) {
               return c;
             }
           }
+          return c;
         }));
       })
       .catch(error => reject(error));
