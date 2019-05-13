@@ -3923,7 +3923,7 @@ Email verified! You can close this tab or hit the back button.
           serviceUrl += '/';
         }
         let url = serviceUrl + conversation_id;
-        
+
         let pid_to_ptpt = {};
         candidates.forEach((c) => {
           pid_to_ptpt[c.pid] = c;
@@ -5999,15 +5999,13 @@ Email verified! You can close this tab or hit the back button.
       })
       .catch((err) => {
         fail(res, 500, "polis_err_get_comments_translations", err);
-       });
+      });
   }
 
   function handle_GET_comments(req, res) {
 
     let rid = req.headers["x-request-id"] + " " + req.headers['user-agent'];
     winston.log("info", "getComments " + rid + " begin");
-
-    const isReportQuery = !_.isUndefined(req.p.rid);
 
     getComments(req.p).then(function (comments) {
       if (req.p.rid) {
@@ -6039,20 +6037,11 @@ Email verified! You can close this tab or hit the back button.
         return c;
       });
 
-      if (req.p.include_demographics) {
-        isModerator(req.p.zid, req.p.uid).then((owner) => {
-          if (owner || isReportQuery) {
-            return getDemographicsForVotersOnComments(req.p.zid, comments).then((commentsWithDemographics) => {
-              finishArray(res, commentsWithDemographics);
-            }).catch((err) => {
-              fail(res, 500, "polis_err_get_comments3", err);
-            });
-          } else {
-            fail(res, 500, "polis_err_get_comments_permissions");
-          }
-        }).catch((err) => {
-          fail(res, 500, "polis_err_get_comments2", err);
-        });
+      if (req.p.translate && req.p.lang) {
+        Comment.appendTranslationToComments(comments, req.p)
+          .then(newComments => {
+            finishArray(res, newComments);
+          });
       } else {
         finishArray(res, comments);
       }

@@ -310,18 +310,18 @@ function getCommentTranslations(zid, tid, lang) {
   } else {
     language = lang;
   }
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     getComment(zid, tid).then((comment) => {
       pg.queryP("select * from comment_translations where zid=$1 and tid=$2 and lang LIKE $3;",
         [zid, tid, language + '%']).then((existingTranslations) => {
         if (existingTranslations && existingTranslations.length > 0) {
           // If exact existing translation exists, just use it
-            for (let i in existingTranslations) {
-              if (existingTranslations[i].lang === lang) {
-                existingTranslations = [existingTranslations[i]];
-                break;
-              }
+          for (let i in existingTranslations) {
+            if (existingTranslations[i].lang === lang) {
+              existingTranslations = [existingTranslations[i]];
+              break;
             }
+          }
           resolve(existingTranslations[0]);
         } else {
           // Else we translate then store
@@ -356,6 +356,30 @@ function translateString(txt, target_lang) {
   return Promise.resolve(null);
 }
 
+function appendTranslationToComments(comments, option) {
+  return new Promise((resolve, reject) => {
+    // As policy of polis, remove region code
+    let lang = option.lang;
+    if (lang.indexOf('-') > 0) {
+      lang = lang.split('-')[0];
+    }
+    pg.queryP('SELECT * FROM comment_translations WHERE zid=$1 AND lang LIKE $2;', [option.zid, lang + "%"])
+      .then(rows => {
+        resolve(comments.map((c) => {
+          for (let i in rows) {
+            let row = rows[i];
+            // noinspection EqualityComparisonWithCoercionJS
+            if (c.tid == row.tid) {
+              c.translatedText = {};
+              c.translatedText[lang] = row.txt;
+              return c;
+            }
+          }
+        }));
+      })
+      .catch(error => reject(error));
+  });
+}
 
 module.exports = {
   getComment,
@@ -364,5 +388,6 @@ module.exports = {
   _getCommentsList,
   getNumberOfCommentsRemaining,
   getCommentTranslations,
-  translateAndStoreComment
+  translateAndStoreComment,
+  appendTranslationToComments
 };
