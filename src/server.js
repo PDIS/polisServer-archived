@@ -636,16 +636,7 @@ function initializePolisHelpers() {
       });
   }
 
-  function detectLanguage(txt) {
-    if (useTranslateApi) {
-      return translateClient.detect(txt);
-    }
-    return Promise.resolve([{
-      confidence: null,
-      language: null,
-    }]);
-  }
-
+  const detectLanguage = Comment.detectLanguage;
 
   if (isTrue(process.env.BACKFILL_COMMENT_LANG_DETECTION)) {
     pgQueryP("select tid, txt, zid from comments where lang is null;", []).then((comments) => {
