@@ -389,6 +389,16 @@ function appendTranslationToComments(comments, option) {
   });
 }
 
+function detectLanguage(txt) {
+  if (useTranslateApi) {
+    return translateClient.detect(txt);
+  }
+  return Promise.resolve([{
+    confidence: null,
+    language: null,
+  }]);
+}
+
 module.exports = {
   getComment,
   getComments,
@@ -397,5 +407,6 @@ module.exports = {
   getNumberOfCommentsRemaining,
   getCommentTranslations,
   translateAndStoreComment,
-  appendTranslationToComments
+  appendTranslationToComments,
+  detectLanguage
 };
