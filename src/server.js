@@ -10327,10 +10327,8 @@ Thanks for using Polis!
         let pids = participantsWithSocialInfo.map(function (p) {
           return p.pid;
         });
-        console.log('mike1234', pids.length);
 
         let pidToData = _.indexBy(participantsWithSocialInfo, "pid"); // TODO this is extra work, probably not needed after some rethinking
-        console.log('mike12345', pidToData);
 
         // polisSocialSettings.forEach(function(p) {
         //     if (shouldSkip(p)) {
@@ -10386,8 +10384,6 @@ Thanks for using Polis!
         });
         pids = _.uniq(pids, true);
 
-        console.log('mike12346', pids);
-
         return getVotesForZidPidsWithTimestampCheck(zid, pids, math_tick).then(function (vectors) {
 
           // TODO parallelize with above query
@@ -10401,10 +10397,8 @@ Thanks for using Polis!
               // winston.log("info",pidToData[pid]);
               if (notInBucket && !isSelf) {
                 // pidToData[pid].ignore = true;
-                console.log('mike12347', 'deleting', pid);
                 delete pidToData[pid]; // if the participant isn't in a bucket, they probably haven't voted enough for the math worker to bucketize them.
               } else if (!!pidToData[pid]) {
-                console.log('mike12348', 'keeping', pid);
                 pidToData[pid].votes = value; // no separator, like this "adupuuauuauupuuu";
                 pidToData[pid].bid = bid;
               }
