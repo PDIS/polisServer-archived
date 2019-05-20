@@ -287,8 +287,6 @@ DD.prototype.s = DA.prototype.s = function (k, v) {
 // }
 
 
-const domainOverride = process.env.DOMAIN_OVERRIDE || null;
-
 function haltOnTimeout(req, res, next) {
   if (req.timedout) {
     fail(res, 500, "polis_err_timeout_misc");
@@ -607,7 +605,6 @@ function initializePolisHelpers() {
   const setPlanCookie = cookies.setPlanCookie;
   const setPermanentCookie = cookies.setPermanentCookie;
   const setCookieTestCookie = cookies.setCookieTestCookie;
-  const shouldSetCookieOnPolisDomain = cookies.shouldSetCookieOnPolisDomain;
   const addCookies = cookies.addCookies;
   const getPermanentCookieAndEnsureItIsSet = cookies.getPermanentCookieAndEnsureItIsSet;
 
@@ -1114,16 +1111,7 @@ function initializePolisHelpers() {
 
   function addCorsHeader(req, res, next) {
 
-    let host = "";
-    if (domainOverride) {
-      host = req.protocol + "://" + domainOverride;
-    } else {
-      // TODO does it make sense for this middleware to look
-      // at origin || referer? is Origin for CORS preflight?
-      // or for everything?
-      // Origin was missing from FF, so added Referer.
-      host = req.get("Origin") || req.get("Referer") || "";
-    }
+    let host = Config.get('SERVICE_URL');
 
     // Somehow the fragment identifier is being sent by IE10????
     // Remove unexpected fragment identifier
@@ -1142,13 +1130,6 @@ function initializePolisHelpers() {
     });
 
 
-    if (!domainOverride && !hasWhitelistMatches(host) && !routeIsWhitelistedForAnyDomain) {
-      winston.log("info", 'not whitelisted');
-      // winston.log("info",req);
-      winston.log("info", req.headers);
-      winston.log("info", req.path);
-      return next("unauthorized domain: " + host);
-    }
     if (host === "") {
       // API
     } else {
@@ -1181,20 +1162,12 @@ function initializePolisHelpers() {
   const hexToStr = Utils.hexToStr;
 
   function handle_GET_launchPrep(req, res) {
-
-
-    let setOnPolisDomain = !domainOverride;
-    let origin = req.headers.origin || "";
-    if (setOnPolisDomain && origin.match(/^http:\/\/localhost:[0-9]{4}/)) {
-      setOnPolisDomain = false;
-    }
-
     if (!req.cookies[COOKIES.PERMANENT_COOKIE]) {
-      setPermanentCookie(req, res, setOnPolisDomain, makeSessionToken());
+      setPermanentCookie(req, res, makeSessionToken());
     }
-    setCookieTestCookie(req, res, setOnPolisDomain);
+    setCookieTestCookie(req, res);
 
-    setCookie(req, res, setOnPolisDomain, "top", "ok", {
+    setCookie(req, res, "top", "ok", {
       httpOnly: false, // not httpOnly - needed by JS
     });
 
@@ -1203,36 +1176,9 @@ function initializePolisHelpers() {
     res.redirect(dest);
   }
 
-
-  // function handle_GET_setFirstCookie(req, res) {
-
-
-  //     let setOnPolisDomain = !domainOverride;
-  //     let origin = req.headers.origin || "";
-  //     if (setOnPolisDomain && origin.match(/^http:\/\/localhost:[0-9]{4}/)) {
-  //         setOnPolisDomain = false;
-  //     }
-
-  //     if (!req.cookies[COOKIES.PERMANENT_COOKIE]) {
-  //         setPermanentCookie(req, res, setOnPolisDomain, makeSessionToken());
-  //     }
-  //     setCookie(req, res, setOnPolisDomain, "top", "ok", {
-  //         httpOnly: false,            // not httpOnly - needed by JS
-  //     });
-  //     res.status(200).json({});
-  // });
-
   function handle_GET_tryCookie(req, res) {
-
-
-    let setOnPolisDomain = !domainOverride;
-    let origin = req.headers.origin || "";
-    if (setOnPolisDomain && origin.match(/^http:\/\/localhost:[0-9]{4}/)) {
-      setOnPolisDomain = false;
-    }
-
     if (!req.cookies[COOKIES.TRY_COOKIE]) {
-      setCookie(req, res, setOnPolisDomain, COOKIES.TRY_COOKIE, "ok", {
+      setCookie(req, res, COOKIES.TRY_COOKIE, "ok", {
         httpOnly: false, // not httpOnly - needed by JS
       });
     }
@@ -2216,45 +2162,20 @@ Feel free to reply to this email if you need help.`;
 
 
   function clearCookie(req, res, cookieName) {
-    let origin = req.headers.origin || "";
-    if (domainOverride || origin.match(/^http:\/\/localhost:[0-9]{4}/)) {
-      res.clearCookie(cookieName, {
-        path: "/",
-      });
-    } else {
-      res.clearCookie(cookieName, {
-        path: "/",
-        domain: ".pol.is",
-      });
-      //         res.clearCookie(cookieName, {path: "/", domain: "www.pol.is"});
-    }
+    res.clearCookie(cookieName, {
+      path: "/",
+    });
   }
 
   function clearCookies(req, res) {
     let origin = req.headers.origin || "";
     let cookieName;
-    if (domainOverride || origin.match(/^http:\/\/localhost:[0-9]{4}/)) {
-      for (cookieName in req.cookies) {
-        if (COOKIES_TO_CLEAR[cookieName]) {
-          res.clearCookie(cookieName, {
-            path: "/",
-          });
-        }
+    for (cookieName in req.cookies) {
+      if (COOKIES_TO_CLEAR[cookieName]) {
+        res.clearCookie(cookieName, {
+          path: "/",
+        });
       }
-    } else {
-      for (cookieName in req.cookies) {
-        if (COOKIES_TO_CLEAR[cookieName]) {
-          res.clearCookie(cookieName, {
-            path: "/",
-            domain: ".pol.is",
-          });
-        }
-      }
-      // for (cookieName in req.cookies) {
-      //     if (COOKIES_TO_CLEAR[cookieName]) {
-      //         res.clearCookie(cookieName, {path: "/", domain: "www.pol.is"});
-      //     }
-      // }
     }
     winston.log("info", "after clear res set-cookie: " + JSON.stringify(res._headers["set-cookie"]));
   }
@@ -5203,12 +5124,7 @@ Email verified! You can close this tab or hit the back button.
     // update DB and finish
     return changePlan(uid, planCode).then(function () {
       // Set cookie
-      var setOnPolisDomain = !domainOverride;
-      var origin = req.headers.origin || "";
-      if (setOnPolisDomain && origin.match(/^http:\/\/localhost:[0-9]{4}/)) {
-        setOnPolisDomain = false;
-      }
-      setPlanCookie(req, res, setOnPolisDomain, planCode);
+      setPlanCookie(req, res, planCode);
     });
   }
 
@@ -5224,12 +5140,7 @@ Email verified! You can close this tab or hit the back button.
       // Set cookie
       if (isCurrentUser) {
         var protocol = devMode ? "http" : "https";
-        var setOnPolisDomain = !domainOverride;
-        var origin = req.headers.origin || "";
-        if (setOnPolisDomain && origin.match(/^http:\/\/localhost:[0-9]{4}/)) {
-          setOnPolisDomain = false;
-        }
-        setPlanCookie(req, res, setOnPolisDomain, planCode);
+        setPlanCookie(req, res, planCode);
 
         // Redirect to the same URL with the path behind the fragment "#"
         var path = "/settings";
@@ -11723,16 +11634,11 @@ Thanks for using Polis!
 
 
     // Set stuff in cookies to be retrieved when POST participants is called.
-    let setOnPolisDomain = !domainOverride;
-    let origin = req.headers.origin || "";
-    if (setOnPolisDomain && origin.match(/^http:\/\/localhost:[0-9]{4}/)) {
-      setOnPolisDomain = false;
-    }
     if (req.p.referrer) {
-      setParentReferrerCookie(req, res, setOnPolisDomain, req.p.referrer);
+      setParentReferrerCookie(req, res, req.p.referrer);
     }
     if (req.p.parent_url) {
-      setParentUrlCookie(req, res, setOnPolisDomain, req.p.parent_url);
+      setParentUrlCookie(req, res, req.p.parent_url);
     }
 
     function appendParams(url) {
@@ -12046,7 +11952,7 @@ Thanks for using Polis!
       });
     }
 
-    setCookieTestCookie(req, res, shouldSetCookieOnPolisDomain(req));
+    setCookieTestCookie(req, res);
 
     if (devMode) {
       buildNumber = null;
