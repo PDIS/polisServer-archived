@@ -2,7 +2,6 @@ const pg = require('./db/pg-query');
 const Config = require('./polis-config');
 const Conversation = require('./conversation');
 const Log = require('./log');
-const Utils = require('./utils/common');
 const _ = require('underscore');
 const MPromise = require('./utils/metered').MPromise;
 const LruCache = require("lru-cache");
