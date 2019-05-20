@@ -1054,7 +1054,7 @@ function initializePolisHelpers() {
   ];
 
   let whitelistedDomains = [
-    "pol.is",
+    Config.get('SERVICE_URL'),
     process.env.DOMAIN_WHITELIST_ITEM_01,
     process.env.DOMAIN_WHITELIST_ITEM_02,
     process.env.DOMAIN_WHITELIST_ITEM_03,
@@ -1063,12 +1063,6 @@ function initializePolisHelpers() {
     process.env.DOMAIN_WHITELIST_ITEM_06,
     process.env.DOMAIN_WHITELIST_ITEM_07,
     process.env.DOMAIN_WHITELIST_ITEM_08,
-    "localhost:5001",
-    "localhost:5002",
-    "canvas.instructure.com", // LTI
-    "canvas.uw.edu", // LTI
-    "canvas.shoreline.edu", // LTI
-    "shoreline.instructure.com", // LTI
     "facebook.com",
     "api.twitter.com",
     "connect.stripe.com",
