@@ -555,49 +555,6 @@ const userFail = Log.userFail;
 function initializePolisHelpers() {
 
   const polisTypes = Utils.polisTypes;
-
-  // // If there are any comments which have no votes by the owner, create a PASS vote by the owner.
-  // pgQuery("select * from comments", [], function(err, comments) {
-  //     pgQuery("select * from votes", [], function(err, votes) {
-  //         comments = comments.rows;
-  //         votes = votes.rows;
-
-  //         let exists = {};
-  //         votes.forEach(function(v) {
-  //             exists[v.zid +"_"+ v.tid] = true;
-  //         });
-  //         let missing = [];
-  //         for (var i = 0 ; i < comments.length; i++) {
-  //             let c = comments[i];
-  //             if (!exists[c.zid + "_" + c.tid]) {
-  //                 missing.push(c);
-  //             }
-  //         }
-  //         async.series(
-  //             missing.map(function(c) {
-  //                 return function(callback) {
-  //                     votesPost(uid, c.pid, c.zid, c.tid, 0)
-  //                         .then(function() {
-  //                             winston.log("info","ok " + c.txt);
-  //                             callback(null);
-  //                         })
-  //                         .catch(function() {
-  //                             winston.log("info","failedd " + c.txt);
-  //                             callback(1);
-  //                         });
-  //                 };
-  //             }),
-  //             function(err, results) {
-  //                 winston.log("info",err);
-  //             });
-
-
-  //         winston.log("info",missing);
-  //         winston.log("info",missing.length);
-  //         winston.log("info",comments.length);
-  //     });
-  // });
-
   const setCookie = cookies.setCookie;
   const setParentReferrerCookie = cookies.setParentReferrerCookie;
   const setParentUrlCookie = cookies.setParentUrlCookie;
@@ -3084,6 +3041,7 @@ ${serverName}/pwreset/${pwresettoken}
       i18n.__("Get Started with Polis"),
       body);
   }
+  end initializePolisHelpers
 
   function isEmailVerified(email) {
     return pgQueryP("select * from email_validations where email = ($1);", [email]).then(function (rows) {
