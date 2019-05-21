@@ -101,8 +101,7 @@ var web = new WebClient(process.env.SLACK_API_TOKEN);
 
 // # notifications
 const winston = console;
-const emailSenders = require('./email/sendEmailSesMailgun').EmailSenders(AWS);
-const sendTextEmail = emailSenders.sendTextEmail;
+const sendTextEmail = require('./email/mailgun').sendText;
 
 const resolveWith = (x) => {
   return Promise.resolve(x);
