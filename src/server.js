@@ -3041,7 +3041,6 @@ ${serverName}/pwreset/${pwresettoken}
       i18n.__("Get Started with Polis"),
       body);
   }
-  end initializePolisHelpers
 
   function isEmailVerified(email) {
     return pgQueryP("select * from email_validations where email = ($1);", [email]).then(function (rows) {
