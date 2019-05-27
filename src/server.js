@@ -4597,12 +4597,6 @@ Email verified! You can close this tab or hit the back button.
     console.log("fb_data"); // TODO_REMOVE
     console.dir(o); // TODO_REMOVE
 
-    let shouldAddToIntercom = req.p.owner;
-    if (req.p.conversation_id) {
-      // TODO needed now that we have "owner" param?
-      shouldAddToIntercom = false;
-    }
-
     let fbUserRecord = {
       // uid provided later
       fb_user_id: fb_user_id,
@@ -4779,34 +4773,6 @@ Email verified! You can close this tab or hit the back button.
             email: user.email,
             // token: token
           });
-          if (shouldAddToIntercom) {
-            let params = {
-              "email": user.email,
-              "name": user.hname,
-              "user_id": user.uid,
-            };
-            let customData = {};
-            if (referrer) {
-              customData.referrer = referrer;
-            }
-            // if (organization) {
-            //     customData.org = organization;
-            // }
-            customData.fb = true; // mark this user as a facebook auth user
-            customData.uid = user.uid;
-            if (_.keys(customData).length) {
-              params.custom_data = customData;
-            }
-            intercom.createUser(params, function (err, res) {
-              if (err) {
-                winston.log("info", err);
-                console.error("polis_err_intercom_create_user_fb_fail");
-                winston.log("info", params);
-                yell("polis_err_intercom_create_user_fb_fail");
-                return;
-              }
-            });
-          }
         }, function (err) {
           fail(res, 500, "polis_err_reg_fb_user_misc22", err);
         }).catch(function (err) {
@@ -9017,44 +8983,6 @@ Thanks for using Polis!
   function handle_GET_twitter_oauth_callback(req, res) {
     let uid = req.p.uid;
     winston.log("info", "twitter oauth callback req.p", req.p);
-
-
-    // commenting this out for now because all objects end up getting owner = t, but we don't really want to
-    // add all twitter/facebook logins to intercom, so turning this off for now.
-    //function maybeAddToIntercom(o) {
-    //let shouldAddToIntercom = req.p.owner;
-    //if (shouldAddToIntercom) {
-    //let params = {
-    //"email": o.email,
-    //"name": o.name,
-    //"user_id": o.uid,
-    //};
-    //let customData = {};
-    //// if (referrer) {
-    ////     customData.referrer = o.referrer;
-    //// }
-    //// if (organization) {
-    ////     customData.org = organization;
-    //// }
-    //// customData.fb = true; // mark this user as a facebook auth user
-    //customData.tw = true; // mark this user as a twitter auth user
-    //customData.twitterScreenName = o.screen_name;
-    //customData.uid = o.uid;
-    //if (_.keys(customData).length) {
-    //params.custom_data = customData;
-    //}
-    //intercom.createUser(params, function(err, res) {
-    //if (err) {
-    //winston.log("info", err);
-    //console.error("polis_err_intercom_create_user_tw_fail");
-    //winston.log("info", params);
-    //yell("polis_err_intercom_create_user_tw_fail");
-    //return;
-    //}
-    //});
-    //}
-    //}
-
 
     // TODO "Upon a successful authentication, your callback_url would receive a request containing the oauth_token and oauth_verifier parameters. Your application should verify that the token matches the request token received in step 1."
 

@@ -80,7 +80,7 @@ function createUser(req, res) {
     return;
   }
 
-  pg.query("SELECT * FROM users WHERE email = ($1)", [email]).then(function (rows) {
+  pg.query("SELECT * FROM users WHERE email = ($1);", [email]).then(function (rows) {
 
     if (rows.length > 0) {
       fail(res, 403, "polis_err_reg_user_with_that_email_exists");
