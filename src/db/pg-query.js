@@ -55,7 +55,7 @@ function queryImpl(pool, queryString, ...args) {
     params = [];
     callback = args[0];
   } else {
-    throw "unexpected db query syntax";
+    throw "missing callback function in pg-query";
   }
 
   // Not sure whether we have to be this careful in calling release for these query results. There may or may
