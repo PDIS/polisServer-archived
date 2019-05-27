@@ -177,11 +177,11 @@ function isPolisDev(uid) {
 
 // log heap stats
 setInterval(function () {
-  let mem = process.memoryUsage();
-  let heapUsed = mem.heapUsed;
-  let rss = mem.rss;
-  let heapTotal = mem.heapTotal;
-  winston.log("info", "heapUsed:", heapUsed, "heapTotal:", heapTotal, "rss:", rss);
+  // let mem = process.memoryUsage();
+  // let heapUsed = mem.heapUsed;
+  // let rss = mem.rss;
+  // let heapTotal = mem.heapTotal;
+  // winston.log("info", "heapUsed:", heapUsed, "heapTotal:", heapTotal, "rss:", rss);
   // let start = Date.now();
 
   //metric("api.process.mem.heapUsed", heapUsed, start);
@@ -3504,7 +3504,6 @@ Email verified! You can close this tab or hit the back button.
   }
 
   function doNotificationLoop() {
-    console.log('doNotificationLoop');
     doNotificationBatch().then(() => {
       setTimeout(doNotificationLoop, 10000);
     });
