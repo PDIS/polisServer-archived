@@ -4,7 +4,7 @@ const config = {
   PORT: 5000,
   MATH_ENV: 'prod',
   STATIC_FILES_ORIGIN: 'http://localhost:5044', // Static file origin relative to the server
-  SERVICE_URL: 'https://your.domain.com/',
+  SERVICE_URL: 'https://your.domain.com', // IMPORTANT: DO NOT add tailing slash!
   DATABASE_URL: 'postgres://polis:polis@localhost:5432/polis',
   DATABASE_FOR_READS_NAME: 'DATABASE_URL',
   POLIS_FROM_ADDRESS: 'polis-noreply <polis-noreply@domainOverride>',

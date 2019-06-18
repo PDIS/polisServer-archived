@@ -280,8 +280,9 @@ function getSocialInfoForUsers(uids, zid) {
     "x as (select * from xids where uid in (" + uidString + ") and owner  in (select org_id from conversations where zid = ($1))), "+
     "fb as (select * from facebook_users where uid in (" + uidString + ")), "+
     "tw as (select * from twitter_users where uid in (" + uidString + ")), "+
-    "foo as (select *, coalesce(fb.uid, tw.uid) as foouid from fb full outer join tw on tw.uid = fb.uid) "+
-    "select *, coalesce(foo.foouid, x.uid) as uid from foo full outer join x on x.uid = foo.foouid;", [zid]);
+    "jn as (select * from join_users where uid in (" + uidString + ")), "+
+    "alle as (select *, coalesce(fb.uid, tw.uid, jn.uid) as auid from fb full outer join tw on tw.uid = fb.uid full outer join jn on jn.uid = fb.uid) "+
+    "select *, coalesce(alle.auid, x.uid) as uid from alle full outer join x on x.uid = alle.auid;", [zid]);
 }
 
 module.exports = {

@@ -98,6 +98,9 @@ function getComments(o) {
             // xInfo
             "x_profile_image_url",
             "x_name",
+            // join
+            'nickname',
+            'picture'
           ]);
           infoToReturn.tw_verified = !!info.verified;
           infoToReturn.tw_followers_count = info.followers_count;
