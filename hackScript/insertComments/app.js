@@ -12,6 +12,8 @@
 const fs = require('fs');
 const { Client } = require('pg');
 
+console.log(process.argv);
+
 async function main(err, data) {
   let lines = data.toString().split('\n');
 	let step = 0;
@@ -24,6 +26,7 @@ async function main(err, data) {
 	      break;
 	    case 1:
 	      comment.picture = line;
+				if (line.length == 0) comment.picture == null;
 	      break;
 	    case 2:
 	      comment.chineseComment = line;
@@ -52,18 +55,18 @@ async function insertToDB(comment) {
   let uid = res.rows[0].uid;
 	// Insert picture
 	await client.query("INSERT INTO join_users (uid, nickname, picture) VALUES ($1, $2, $3)", [uid, comment.name, comment.picture]);
-	// Get zid
+  // Get zid
 	let zinvite = process.argv[2];
 	if (zinvite.length === 0) {
 		console.log('zinvite is not set!');
 	}
 	res = await client.query("SELECT zid FROM zinvites WHERE zinvite=$1", [zinvite]);
 	let zid = res.rows[0].zid;
-	// Get pid
+  // Get pid
   res = await client.query("INSERT INTO participants (zid, uid, created) VALUES ($1, $2, default) RETURNING pid;", [zid, uid]);
 	let pid = res.rows[0].pid;
 	// Insert Chinese comment
-	res = await client.query("INSERT INTO comments (pid, zid, txt, velocity, active, mod, uid, tweet_id, quote_src_url, anon, is_seed, created, tid, lang, lang_confidence) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, default, null, $12, $13) ON CONFLICT DO NOTHING RETURNING tid;", [pid, zid, comment.chineseComment, 1, true, 0, uid, 0, '', false, false, 'zh-tw', 1]);
+	res = await client.query("INSERT INTO comments (pid, zid, txt, velocity, active, mod, uid, tweet_id, quote_src_url, anon, is_seed, created, tid, lang, lang_confidence) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, default, null, $12, $13) ON CONFLICT DO NOTHING RETURNING tid;", [pid, zid, comment.chineseComment, 1, true, 0, uid, null, '', false, false, 'zh-tw', 1]);
 	if (res.rowCount === 0) {
 	  await client.end();
 		return;
