@@ -4593,8 +4593,8 @@ Email verified! You can close this tab or hit the back button.
     let password = req.p.password;
     let uid = req.p.uid;
 
-    console.log("fb_data"); // TODO_REMOVE
-    console.dir(o); // TODO_REMOVE
+    // console.log("fb_data"); // TODO_REMOVE
+    // console.dir(o); // TODO_REMOVE
 
     let fbUserRecord = {
       // uid provided later
