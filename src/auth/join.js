@@ -17,7 +17,13 @@ function signIn(req, res) {
     })
     .then(result => {
       if (result.existed) {
-        login(req, res, result.user, result.uid);
+	if (result.user.isValid && !result.valid) {
+	  pg.query('UPDATE join_users SET valid=true WHERE uid=$1;', [result.uid], () => {
+            login(req, res, result.user, result.uid);
+          });
+	} else {
+          login(req, res, result.user, result.uid);
+ 	}
       } else {
         create(req, res, result.user);
       }
@@ -106,6 +112,7 @@ function isUserExist(user) {
         resolve({
           existed: rows.length > 0,
           uid: rows[0] ? rows[0].uid : null,
+	  valid: rows[0] ? rows[0].valid : false,
           user: user
         });
       })
